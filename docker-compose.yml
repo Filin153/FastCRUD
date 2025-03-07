@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis/redis-stack
+    container_name: redis
+    ports:
+      - "6379:6379"
+      - "8001:8001"
+    volumes:
+      - ./redis-data:/data
+    environment:
+      REDIS_ARGS: "--requirepass ${REDIS_PASSWORD}"
+
+  db:
+    image: postgres
+    restart: always
+    shm_size: 512mb
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data/pgdata
+    networks:
+      - app
+    ports:
+      - "2345:5432"
+    environment:
+      POSTGRES_USER: ${PG_USER}
+      POSTGRES_PASSWORD: ${PG_PASS}
+      POSTGRES_DB: ${PG_DB_NAME}
+      PGDATA: "/var/lib/postgresql/data/pgdata"
+
+  adminer:
+    image: adminer
+    restart: always
+    networks:
+      - app
+    ports:
+      - "6144:8080"
+
+networks:
+  app:
+    driver: bridge
