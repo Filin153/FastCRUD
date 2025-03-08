@@ -1,7 +1,7 @@
 [project]
-name = "basecrud"
-version = "0.1.0"
-description = "Add your description here"
+name = "FastCRUD"
+version = "0.0.1"
+description = "CRUD with SQL and Redis"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
