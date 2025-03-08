@@ -9,12 +9,10 @@ from config import settings
 
 def get_db_url_async() -> str:
     return f"postgresql+asyncpg://{settings.pg_user}:{settings.pg_pass}@{settings.pg_host}:{settings.pg_port}/{settings.pg_db_name}"
-    # return settings.db_async
 
 
 def get_db_url_sync() -> str:
     return f"postgresql://{settings.pg_user}:{settings.pg_pass}@{settings.pg_host}:{settings.pg_port}/{settings.pg_db_name}"
-    # return settings.db_sync
 
 
 engine_async = create_async_engine(get_db_url_async())

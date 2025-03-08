@@ -1,10 +1,13 @@
+from aredis_om import Field
 from pydantic import BaseModel
+
+from database.interfaces.redis_json import BaseRedisModel
 
 
 class UserCreate(BaseModel):
-    tg_id: int
-    fio: str
-    group: str
+    tg_id: int = Field(index=True)
+    fio: str = Field(index=True, full_text_search=True)
+    group: str = Field(index=True, full_text_search=True)
 
 
 class UserUpdate(BaseModel):
@@ -13,8 +16,8 @@ class UserUpdate(BaseModel):
     group: str | None = None
 
 
-class UserSchemas(UserCreate):
-    id: int
+class UserSchemas(UserCreate, BaseRedisModel):
+    id: int = Field(index=True)
 
 
 class UserFilters(UserUpdate):

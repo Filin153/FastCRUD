@@ -1,14 +1,17 @@
-from typing import Any, Union
+import warnings
+from abc import ABC
+from typing import Any, Union, Optional
 
-from aredis_om import NotFoundError
-from redis_om import HashModel, RedisModel
+from aredis_om import NotFoundError, Migrator, get_redis_connection, HashModel
 
-from base_interface import BaseDBInterface
+from config import settings
+from .base_interface import BaseDBInterface
 
 
-class SetRedisUrl:
-    def __init__(self, redis_url: str):
-        HashModel.database = redis_url
+class BaseRedisModel(HashModel, ABC):
+    class Meta:
+        global_key_prefix = "db_cache"
+        database = get_redis_connection(url=settings.REDIS_URL)
 
 
 class BaseRedisInterface(BaseDBInterface):
@@ -17,47 +20,55 @@ class BaseRedisInterface(BaseDBInterface):
     def __init__(self,
                  base_schemas: Union[HashModel, Any]
                  ):
+        warnings.filterwarnings(
+            "ignore",
+            category=UserWarning,
+            message="Pydantic serializer warnings:.*"
+        )
+        warnings.filterwarnings(
+            "ignore",
+            category=DeprecationWarning,
+        )
+
         self._base_schemas = base_schemas
 
-    async def _create(self, create_object: _base_schemas | list[_base_schemas],
-                      default_primary_key: bool = False) -> bool:
+    async def migrate(self):
+        await Migrator().run()
+        return self
+
+    async def _create(self, create_object: _base_schemas | list[_base_schemas]) -> bool:
         if isinstance(create_object, list):
             for item in create_object:
-                if not default_primary_key:
-                    item.primary_key = item.id
-                item.save()
+                await item.save()
         else:
-            if not default_primary_key:
-                create_object.primary_key = create_object.id
-            create_object.save()
+            await create_object.save()
+
         return True
 
-    async def _get_one_or_none(self, where_filter: Any) -> _base_schemas | None:
+    async def _get_one_or_none(self, where_filter: Any) -> Optional[_base_schemas]:
         try:
-            return self._base_schemas.find(where_filter).first()
+            return await self._base_schemas.find(where_filter).first()
         except NotFoundError:
             return None
 
     async def _get_all(self,
-                       where_filter: Any,
-                       limit: int = 10,
-                       offset: int = 0,
-                       no_limit: bool = False) -> Any:
+                       where_filter: Any = None,
+                       limit: int = 10000,
+                       offset: int = 0) -> Any:
         try:
-            query = self._base_schemas.find(where_filter)
-            if no_limit:
-                query.limit = float("inf")
+            if where_filter:
+                query = self._base_schemas.find(where_filter)
             else:
-                query.limit = limit
+                query = self._base_schemas.find()
+
+            query.limit = limit
             query.offset = offset
-            return query.all()
+
+            return await query.all()
         except NotFoundError:
             return None
 
-    async def _delete(self, obj: int | _base_schemas) -> bool:
-        if isinstance(obj, int):
-            RedisModel.delete(obj)
-        else:
-            RedisModel.delete_many(obj)
-
+    async def _delete(self, where_filter: Any) -> bool:
+        models = await self._get_all(where_filter)
+        await self._base_schemas.delete_many(models)
         return True

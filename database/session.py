@@ -13,10 +13,12 @@ async def get_async_session() -> AsyncSession:
     async with AsyncSession(engine_async) as conn:
         yield conn
 
+
 @contextmanager
 def get_sync_session() -> Session:
     with Session(engine_sync) as conn:
         yield conn
+
 
 async def get_async_session_fastapi() -> AsyncSession:
     async with AsyncSession(engine_async) as conn:

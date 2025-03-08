@@ -1,6 +1,6 @@
 [project]
 name = "FastCRUD"
-version = "0.0.1"
+version = "0.0.2"
 description = "CRUD with SQL and Redis"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -10,7 +10,8 @@ dependencies = [
     "greenlet>=3.1.1",
     "psycopg2-binary>=2.9.10",
     "pydantic-settings>=2.8.1",
-    "pydantic[email]>=2.10.6",
+    "pytest>=8.3.5",
+    "pytest-asyncio>=0.25.3",
     "redis-om>=0.3.3",
     "sqlalchemy>=2.0.38",
 ]

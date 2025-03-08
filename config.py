@@ -7,7 +7,9 @@ class Settings(BaseSettings):
 
     REDIS_HOST: str
     REDIS_PORT: int
+    REDIS_LOGIN: str
     REDIS_PASSWORD: str
+    REDIS_URL: str = ""
 
     # database
     pg_user: str
@@ -17,7 +19,12 @@ class Settings(BaseSettings):
     pg_db_name: str
 
 
-settings = Settings()
+def get_settings():
+    settings = Settings()
+
+    settings.REDIS_URL = f"redis://{settings.REDIS_LOGIN}:{settings.REDIS_PASSWORD}@{settings.REDIS_HOST}:{settings.REDIS_PORT}"
+
+    return settings
 
 
-
+settings = get_settings()
