@@ -25,4 +25,4 @@ async def get_async_session_fastapi() -> AsyncSession:
         yield conn
 
 
-SessionDep = Annotated[AsyncSession, Depends(get_async_session_fastapi)]
+SessionFastAPIDep = Annotated[AsyncSession, Depends(get_async_session_fastapi)]
