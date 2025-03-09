@@ -39,7 +39,7 @@ class TestRedisDB:
     async def test_get_one(self):
         interface = await BaseRedisInterface(UserSchemas).migrate()
 
-        res_1 = await interface._get_one_or_none(UserSchemas.id == 0)
+        res_1 = await interface._get_one_or_none(id=0)
         assert res_1 != None
         assert res_1.tg_id == 0
 
@@ -49,8 +49,8 @@ class TestRedisDB:
         assert res_2.tg_id == 2
         assert res_2.group == "XD 2"
 
-        res_3 = await interface._get_one_or_none((UserSchemas.fio == "Aboba 2") &
-                                                 (UserSchemas.tg_id >= 1))
+        res_3 = await interface._get_one_or_none(UserSchemas.tg_id >= 1,
+                                                 fio="Aboba 2")
         assert res_3 != None
         assert res_3.id == 2
         assert res_3.tg_id == 2
@@ -76,6 +76,11 @@ class TestRedisDB:
         res_2 = await interface._get_all(UserSchemas.group % "XD")
         assert res_2 != None
         assert len(res_2) == 3
+
+        res_3 = await interface._get_all(UserSchemas.group % "XD", id=2)
+        assert res_3 != None
+        assert len(res_3) == 1
+        assert res_3[0].group == "XD 2"
 
     @pytest.mark.asyncio(loop_scope="session")
     async def test_delete(self):
