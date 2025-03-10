@@ -1,17 +1,19 @@
 import pytest
 
 from database.interfaces.redis_json import BaseRedisInterface
-from tests.schemas.user import UserSchemas
+from tests.schemas.user import UserSchemas, UserFilters
 
-
+@pytest.mark.run(order=2)
 class TestRedisDB:
     @pytest.mark.asyncio(loop_scope="session")
     async def test_init(self):
-        await BaseRedisInterface(UserSchemas).migrate()
+        await BaseRedisInterface(UserSchemas,
+                                 UserFilters).migrate()
 
     @pytest.mark.asyncio(loop_scope="session")
     async def test_create(self):
-        interface = await BaseRedisInterface(UserSchemas).migrate()
+        interface = await BaseRedisInterface(UserSchemas,
+                                             UserFilters).migrate()
 
         await interface._create(UserSchemas(**{
             "id": 0,
@@ -37,7 +39,8 @@ class TestRedisDB:
 
     @pytest.mark.asyncio(loop_scope="session")
     async def test_get_one(self):
-        interface = await BaseRedisInterface(UserSchemas).migrate()
+        interface = await BaseRedisInterface(UserSchemas,
+                                             UserFilters).migrate()
 
         res_1 = await interface._get_one_or_none(id=0)
         assert res_1 != None
@@ -64,7 +67,8 @@ class TestRedisDB:
 
     @pytest.mark.asyncio(loop_scope="session")
     async def test_get_some(self):
-        interface = await BaseRedisInterface(UserSchemas).migrate()
+        interface = await BaseRedisInterface(UserSchemas,
+                                             UserFilters).migrate()
 
         res_1 = await interface._get_all(UserSchemas.tg_id >= 1)
         assert res_1 != None
@@ -84,7 +88,8 @@ class TestRedisDB:
 
     @pytest.mark.asyncio(loop_scope="session")
     async def test_delete(self):
-        interface = await BaseRedisInterface(UserSchemas).migrate()
+        interface = await BaseRedisInterface(UserSchemas,
+                                             UserFilters).migrate()
 
         res_1 = await interface._delete(UserSchemas.tg_id >= 1)
         assert res_1 == True
