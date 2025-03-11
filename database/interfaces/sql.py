@@ -35,7 +35,7 @@ class BaseSQLInterface(BaseDBInterface, SchemasValidator):
     async def __set_delete_at_limit(self, query: Any) -> Any:
         return query.where(self._db_model.delete_at.is_(None))
 
-    async def _query_execute(self,
+    async def query_execute(self,
                              session: AsyncSession,
                              query: Any = None) -> Any:
         try:
@@ -61,7 +61,7 @@ class BaseSQLInterface(BaseDBInterface, SchemasValidator):
         if where_filter is not None:
             query = query.where(where_filter)
 
-        res = await self._query_execute(session, query)
+        res = await self.query_execute(session, query)
         response_object = res.scalars().one_or_none()
 
         if not response_object:
@@ -87,7 +87,7 @@ class BaseSQLInterface(BaseDBInterface, SchemasValidator):
         if where_filter is not None:
             query = query.where(where_filter)
 
-        res = await self._query_execute(session, query)
+        res = await self.query_execute(session, query)
         response_object = res.scalars().all()
 
         if not response_object:
@@ -109,7 +109,7 @@ class BaseSQLInterface(BaseDBInterface, SchemasValidator):
         if where_filter is not None:
             query = query.where(where_filter)
 
-        await self._query_execute(session, query)
+        await self.query_execute(session, query)
         return True
 
     async def _soft_delete(self,
@@ -129,7 +129,7 @@ class BaseSQLInterface(BaseDBInterface, SchemasValidator):
 
         query = query.values(delete_at=func.now())
 
-        await self._query_execute(session, query)
+        await self.query_execute(session, query)
         return True
 
     async def _update(self,
@@ -153,7 +153,7 @@ class BaseSQLInterface(BaseDBInterface, SchemasValidator):
 
         query = query.values(**update_object)
 
-        await self._query_execute(session, query)
+        await self.query_execute(session, query)
         return True
 
     async def _create(self,

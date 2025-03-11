@@ -7,10 +7,6 @@ from pydantic import BaseModel
 
 class BaseDBInterface:
     @abstractmethod
-    async def _query_execute(self, *args, **kwargs) -> Any:
-        pass
-
-    @abstractmethod
     async def _get_one_or_none(self, *args, **kwargs) -> Any:
         pass
 
