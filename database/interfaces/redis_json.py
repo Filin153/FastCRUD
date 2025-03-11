@@ -59,13 +59,13 @@ class BaseRedisInterface(BaseDBInterface, SchemasValidator):
 
     async def __create(self, create_object: _base_schemas):
         try:
-            await self._delete(self._base_schemas.id == create_object.id)
+            await self.delete(self._base_schemas.id == create_object.id)
         except:
             pass
         await create_object.save()
         return True
 
-    async def _create(self, create_object: _base_schemas | list[_base_schemas]) -> bool:
+    async def create(self, create_object: _base_schemas | list[_base_schemas]) -> bool:
         if isinstance(create_object, list):
             for item in create_object:
                 await self.__create(item)
@@ -74,18 +74,18 @@ class BaseRedisInterface(BaseDBInterface, SchemasValidator):
 
         return True
 
-    async def _get_one_or_none(self, where_filter: Any = None, **kwargs) -> Optional[_base_schemas]:
+    async def get_one_or_none(self, where_filter: Any = None, **kwargs) -> Optional[_base_schemas]:
         try:
             where_filter = await self.__connect_filter_with_kwargs(where_filter, **kwargs)
             return await self._base_schemas.find(where_filter).first()
         except NotFoundError:
             return None
 
-    async def _get_all(self,
-                       where_filter: Any = None,
-                       limit: int = 10,
-                       offset: int = 0,
-                       **kwargs) -> list[_base_schemas]:
+    async def get_all(self,
+                      where_filter: Any = None,
+                      limit: int = 10,
+                      offset: int = 0,
+                      **kwargs) -> list[_base_schemas]:
         try:
             where_filter = await self.__connect_filter_with_kwargs(where_filter,
                                                                    error=False,
@@ -109,19 +109,19 @@ class BaseRedisInterface(BaseDBInterface, SchemasValidator):
             return []
 
     async def __update(self, update_object: _base_schemas):
-        await self._delete(self._base_schemas.id == update_object.id)
-        await self._create(update_object)
+        await self.delete(self._base_schemas.id == update_object.id)
+        await self.create(update_object)
         return True
 
-    async def _update(self, update_object: _base_schemas | list[_base_schemas]) -> bool:
+    async def update(self, update_object: _base_schemas | list[_base_schemas]) -> bool:
         if isinstance(update_object, list):
             for item in update_object:
                 await self.__update(item)
         else:
             await self.__update(update_object)
 
-    async def _delete(self, where_filter: Any) -> bool:
-        models = await self._get_all(where_filter)
+    async def delete(self, where_filter: Any) -> bool:
+        models = await self.get_all(where_filter)
         if not models:
             return False
         await self._base_schemas.delete_many(models)

@@ -36,8 +36,8 @@ class BaseSQLInterface(BaseDBInterface, SchemasValidator):
         return query.where(self._db_model.delete_at.is_(None))
 
     async def query_execute(self,
-                             session: AsyncSession,
-                             query: Any = None) -> Any:
+                            session: AsyncSession,
+                            query: Any = None) -> Any:
         try:
             return await session.execute(query)
         except Exception as e:
@@ -45,10 +45,10 @@ class BaseSQLInterface(BaseDBInterface, SchemasValidator):
             logging.error(e)
             raise e
 
-    async def _get_one_or_none(self,
-                               session: AsyncSession,
-                               where_filter: Any = None,
-                               **kwargs) -> Optional[_base_schemas]:
+    async def get_one_or_none(self,
+                              session: AsyncSession,
+                              where_filter: Any = None,
+                              **kwargs) -> Optional[_base_schemas]:
 
         if where_filter is None and not kwargs:
             raise ValueError('At least one of `where_filter` or `kwargs` must be set')
@@ -68,13 +68,13 @@ class BaseSQLInterface(BaseDBInterface, SchemasValidator):
             return None
         return self._base_schemas.model_validate(response_object, from_attributes=True)
 
-    async def _get_all(self,
-                       session: AsyncSession,
-                       where_filter: Any = None,
-                       limit: int = 10,
-                       offset: int = 0,
-                       no_limit: bool = False,
-                       **kwargs) -> list[_base_schemas]:
+    async def get_all(self,
+                      session: AsyncSession,
+                      where_filter: Any = None,
+                      limit: int = 10,
+                      offset: int = 0,
+                      no_limit: bool = False,
+                      **kwargs) -> list[_base_schemas]:
 
         if no_limit:
             query = select(self._db_model).offset(offset)
@@ -94,10 +94,10 @@ class BaseSQLInterface(BaseDBInterface, SchemasValidator):
             return []
         return [self._base_schemas.model_validate(resp_obj, from_attributes=True) for resp_obj in response_object]
 
-    async def _delete(self,
-                      session: AsyncSession,
-                      where_filter: Any = None,
-                      **kwargs) -> bool:
+    async def delete(self,
+                     session: AsyncSession,
+                     where_filter: Any = None,
+                     **kwargs) -> bool:
         if where_filter is None and not kwargs:
             raise ValueError('At least one of `where_filter` or `kwargs` must be set')
 
@@ -112,10 +112,10 @@ class BaseSQLInterface(BaseDBInterface, SchemasValidator):
         await self.query_execute(session, query)
         return True
 
-    async def _soft_delete(self,
-                           session: AsyncSession,
-                           where_filter: Any = None,
-                           **kwargs) -> bool:
+    async def soft_delete(self,
+                          session: AsyncSession,
+                          where_filter: Any = None,
+                          **kwargs) -> bool:
         if where_filter is None and not kwargs:
             raise ValueError('At least one of `where_filter` or `kwargs` must be set')
 
@@ -132,11 +132,11 @@ class BaseSQLInterface(BaseDBInterface, SchemasValidator):
         await self.query_execute(session, query)
         return True
 
-    async def _update(self,
-                      session: AsyncSession,
-                      update_object: dict,
-                      where_filter: Any = None,
-                      **kwargs) -> bool:
+    async def update(self,
+                     session: AsyncSession,
+                     update_object: dict,
+                     where_filter: Any = None,
+                     **kwargs) -> bool:
 
         if where_filter is None and not kwargs:
             raise ValueError('At least one of `where_filter` or `kwargs` must be set')
@@ -156,9 +156,9 @@ class BaseSQLInterface(BaseDBInterface, SchemasValidator):
         await self.query_execute(session, query)
         return True
 
-    async def _create(self,
-                      session: AsyncSession,
-                      create_object: _create_schemas | list[_create_schemas]) -> bool:
+    async def create(self,
+                     session: AsyncSession,
+                     create_object: _create_schemas | list[_create_schemas]) -> bool:
         if isinstance(create_object, list):
             add_object = [self._db_model(**obj.model_dump()) for obj in create_object]
             session.add_all(add_object)

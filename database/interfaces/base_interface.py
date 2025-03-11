@@ -7,27 +7,27 @@ from pydantic import BaseModel
 
 class BaseDBInterface:
     @abstractmethod
-    async def _get_one_or_none(self, *args, **kwargs) -> Any:
+    async def get_one_or_none(self, *args, **kwargs) -> Any:
         pass
 
     @abstractmethod
-    async def _get_all(self, *args, **kwargs) -> Any:
+    async def get_all(self, *args, **kwargs) -> Any:
         pass
 
     @abstractmethod
-    async def _delete(self, *args, **kwargs) -> bool:
+    async def delete(self, *args, **kwargs) -> bool:
         pass
 
     @abstractmethod
-    async def _soft_delete(self, *args, **kwargs) -> bool:
+    async def soft_delete(self, *args, **kwargs) -> bool:
         pass
 
     @abstractmethod
-    async def _update(self, *args, **kwargs) -> bool:
+    async def update(self, *args, **kwargs) -> bool:
         pass
 
     @abstractmethod
-    async def _create(self, *args, **kwargs) -> bool:
+    async def create(self, *args, **kwargs) -> bool:
         pass
 
     @abstractmethod
