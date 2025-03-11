@@ -13,3 +13,12 @@ dependencies = [
     "redis-om>=0.3.3",
     "sqlalchemy>=2.0.38",
 ]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.5",
+    "pytest-asyncio>=0.25.3",
+    "pytest-ordering>=0.6",
+]
+
+
