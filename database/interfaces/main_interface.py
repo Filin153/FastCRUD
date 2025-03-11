@@ -85,6 +85,11 @@ class MainCRUDInterface(BaseDBInterface):
         if limit > 10000 and no_limit == False:
             raise ValueError("limit must be less than 10000")
 
+
+        if no_limit:
+            limit = 10000
+
+
         res = []
 
         if where_filter_redis or kwargs:
