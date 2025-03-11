@@ -24,7 +24,7 @@ services:
       - "2345:5432"
     environment:
       POSTGRES_USER: ${PG_USER}
-      POSTGRES_PASSWORD: ${PG_PASS}
+      POSTGRES_PASSWORD: ${PG_PASSWORD}
       POSTGRES_DB: ${PG_DB_NAME}
       PGDATA: "/var/lib/postgresql/data/pgdata"
 
