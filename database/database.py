@@ -6,17 +6,8 @@ from sqlalchemy.orm import DeclarativeBase, declared_attr, mapped_column, Mapped
 
 from config import settings
 
-
-def get_db_url_async() -> str:
-    return f"postgresql+asyncpg://{settings.pg_user}:{settings.pg_pass}@{settings.pg_host}:{settings.pg_port}/{settings.pg_db_name}"
-
-
-def get_db_url_sync() -> str:
-    return f"postgresql://{settings.pg_user}:{settings.pg_pass}@{settings.pg_host}:{settings.pg_port}/{settings.pg_db_name}"
-
-
-engine_async = create_async_engine(get_db_url_async())
-engine_sync = create_engine(get_db_url_sync())
+engine_async = create_async_engine(settings.PG_ASYNC_URL)
+engine_sync = create_engine(settings.PG_SYNC_URL)
 
 
 class Base(DeclarativeBase):
