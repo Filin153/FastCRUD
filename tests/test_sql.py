@@ -4,11 +4,14 @@ from sqlalchemy import and_
 from database.interfaces.sql import BaseSQLInterface
 from database.models.user import UserModel
 from database.session import get_async_session
+from .conftest import clear_all
 from .schemas.user import *
+
 
 @pytest.mark.run(order=1)
 class TestSQLInterface:
     def test_init(self):
+        clear_all()
         BaseSQLInterface(UserModel,
                          UserSchemas,
                          UserCreate,
@@ -237,7 +240,6 @@ class TestSQLInterface:
 
             res_2 = await interface._get_one_or_none(
                 session=session,
-                where_filter=UserModel.delete_at == None,
                 tg_id=0,
             )
             assert res_2 == None

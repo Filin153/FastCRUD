@@ -4,7 +4,7 @@ from typing import Any, Optional
 from pydantic import BaseModel
 from sqlalchemy import select, update, delete, func, distinct
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import DeclarativeBase, Query
+from sqlalchemy.orm import DeclarativeBase
 
 from .base_interface import BaseDBInterface, SchemasValidator
 
@@ -26,13 +26,14 @@ class BaseSQLInterface(BaseDBInterface, SchemasValidator):
         self._update_schemas = update_schemas
         self._filter_schemas = filter_schemas
 
-
     async def __add_filter_to_query(self, query: Any, **kwargs) -> Any:
         if kwargs:
             filters = await self.valid_schema(self._filter_schemas, **kwargs)
             return query.filter_by(**filters)
         return query
 
+    async def __set_delete_at_limit(self, query: Any) -> Any:
+        return query.where(self._db_model.delete_at.is_(None))
 
     async def _query_execute(self,
                              session: AsyncSession,
@@ -55,6 +56,7 @@ class BaseSQLInterface(BaseDBInterface, SchemasValidator):
         query = select(self._db_model)
 
         query = await self.__add_filter_to_query(query, **kwargs)
+        query = await self.__set_delete_at_limit(query)
 
         if where_filter is not None:
             query = query.where(where_filter)
@@ -80,6 +82,7 @@ class BaseSQLInterface(BaseDBInterface, SchemasValidator):
             query = select(self._db_model).offset(offset).limit(limit)
 
         query = await self.__add_filter_to_query(query, **kwargs)
+        query = await self.__set_delete_at_limit(query)
 
         if where_filter is not None:
             query = query.where(where_filter)
@@ -101,6 +104,7 @@ class BaseSQLInterface(BaseDBInterface, SchemasValidator):
         query = delete(self._db_model)
 
         query = await self.__add_filter_to_query(query, **kwargs)
+        query = await self.__set_delete_at_limit(query)
 
         if where_filter is not None:
             query = query.where(where_filter)
@@ -118,11 +122,12 @@ class BaseSQLInterface(BaseDBInterface, SchemasValidator):
         query = update(self._db_model)
 
         query = await self.__add_filter_to_query(query, **kwargs)
+        query = await self.__set_delete_at_limit(query)
 
         if where_filter is not None:
             query = query.where(where_filter)
 
-        query = query.values({"delete_at": func.now()})
+        query = query.values(delete_at=func.now())
 
         await self._query_execute(session, query)
         return True
@@ -141,6 +146,7 @@ class BaseSQLInterface(BaseDBInterface, SchemasValidator):
         query = update(self._db_model)
 
         query = await self.__add_filter_to_query(query, **kwargs)
+        query = await self.__set_delete_at_limit(query)
 
         if where_filter is not None:
             query = query.where(where_filter)

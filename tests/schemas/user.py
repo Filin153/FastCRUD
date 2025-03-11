@@ -22,5 +22,3 @@ class UserSchemas(UserCreate, BaseRedisModel):
 
 class UserFilters(UserUpdate):
     id: int | None = None
-
-

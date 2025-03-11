@@ -1,12 +1,15 @@
 import pytest
 
 from database.interfaces.redis_json import BaseRedisInterface
+from tests.conftest import clear_all
 from tests.schemas.user import UserSchemas, UserFilters
+
 
 @pytest.mark.run(order=2)
 class TestRedisDB:
     @pytest.mark.asyncio(loop_scope="session")
     async def test_init(self):
+        clear_all()
         await BaseRedisInterface(UserSchemas,
                                  UserFilters).migrate()
 

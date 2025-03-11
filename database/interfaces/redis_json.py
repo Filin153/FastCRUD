@@ -109,9 +109,7 @@ class BaseRedisInterface(BaseDBInterface, SchemasValidator):
             return []
 
     async def __update(self, update_object: _base_schemas):
-        del_res = await self._delete(self._base_schemas.id == update_object.id)
-        if del_res == False:
-            return False
+        await self._delete(self._base_schemas.id == update_object.id)
         await self._create(update_object)
         return True
 

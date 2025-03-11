@@ -1,10 +1,10 @@
 import pytest
 from sqlalchemy import and_
 
-from database.database import Base, engine_sync
 from database.interfaces.main_interface import MainCRUDInterface
 from database.models.user import UserModel
 from database.session import get_async_session
+from .conftest import clear_all
 from .schemas.user import *
 
 
@@ -12,8 +12,7 @@ from .schemas.user import *
 class TestMainInterface:
     @pytest.mark.asyncio(loop_scope="session")
     async def test_init(self):
-        Base.metadata.drop_all(engine_sync)
-        Base.metadata.create_all(engine_sync)
+        clear_all()
         await MainCRUDInterface.init(UserModel,
                                      UserSchemas,
                                      UserCreate,
@@ -240,6 +239,7 @@ class TestMainInterface:
 
             await interface._delete(
                 session=session,
+                soft=False,
                 tg_id=1
             )
 
@@ -251,8 +251,9 @@ class TestMainInterface:
             )
             assert res_1 == None
 
-            await interface._soft_delete(
+            await interface._delete(
                 session=session,
+                soft=True,
                 tg_id=0
             )
 
@@ -260,7 +261,6 @@ class TestMainInterface:
 
             res_2 = await interface._get_one_or_none(
                 session=session,
-                where_filter_sql=UserModel.delete_at == None,
                 tg_id=0,
             )
             assert res_2 == None

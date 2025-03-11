@@ -63,6 +63,7 @@ class MainCRUDInterface(BaseDBInterface):
         if where_filter_redis or kwargs:
             res = await self.__redis._get_one_or_none(where_filter=where_filter_redis,
                                                       **kwargs)
+            print(f"Redis {res=}")
 
         if res is None and (where_filter_sql is not None or kwargs):
             res = await self.__sql._get_one_or_none(session=session,
@@ -141,17 +142,13 @@ class MainCRUDInterface(BaseDBInterface):
     async def _delete(self,
                       session: AsyncSession,
                       where_filter: Any = None,
+                      soft: bool = True,
                       **kwargs) -> bool:
         res = await self.__sql._get_one_or_none(session, where_filter, **kwargs)
+        print(f"Delete {res=}")
         await self.__redis._delete(self._base_schemas.id == res.id)
-        await self.__sql._delete(session, where_filter, **kwargs)
-        return True
-
-    async def _soft_delete(self,
-                           session: AsyncSession,
-                           where_filter: Any = None,
-                           **kwargs) -> bool:
-        res = await self.__sql._get_one_or_none(session, where_filter, **kwargs)
-        await self.__redis._delete(self._base_schemas.id == res.id)
-        await self.__sql._soft_delete(session, where_filter, **kwargs)
+        if soft:
+            await self.__sql._soft_delete(session, where_filter, **kwargs)
+        else:
+            await self.__sql._delete(session, where_filter, **kwargs)
         return True
