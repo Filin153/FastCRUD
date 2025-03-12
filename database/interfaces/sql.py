@@ -15,11 +15,13 @@ class BaseSQLInterface(BaseDBInterface, SchemasValidator):
     _create_schemas = None
     _update_schemas = None
 
-    def __init__(self, db_model: DeclarativeBase,
+    def __init__(self, session: AsyncSession,
+                 db_model: DeclarativeBase,
                  base_schemas: BaseModel.model_json_schema,
                  create_schemas: BaseModel.model_json_schema,
                  update_schemas: BaseModel.model_json_schema,
                  filter_schemas: BaseModel.model_json_schema):
+        self.session = session
         self._db_model = db_model
         self._base_schemas = base_schemas
         self._create_schemas = create_schemas
@@ -36,17 +38,15 @@ class BaseSQLInterface(BaseDBInterface, SchemasValidator):
         return query.where(self._db_model.delete_at.is_(None))
 
     async def query_execute(self,
-                            session: AsyncSession,
                             query: Any = None) -> Any:
         try:
-            return await session.execute(query)
+            return await self.session.execute(query)
         except Exception as e:
-            await session.rollback()
+            await self.session.rollback()
             logging.error(e)
             raise e
 
     async def get_one_or_none(self,
-                              session: AsyncSession,
                               where_filter: Any = None,
                               **kwargs) -> Optional[_base_schemas]:
 
@@ -61,7 +61,7 @@ class BaseSQLInterface(BaseDBInterface, SchemasValidator):
         if where_filter is not None:
             query = query.where(where_filter)
 
-        res = await self.query_execute(session, query)
+        res = await self.query_execute(query)
         response_object = res.scalars().one_or_none()
 
         if not response_object:
@@ -69,7 +69,6 @@ class BaseSQLInterface(BaseDBInterface, SchemasValidator):
         return self._base_schemas.model_validate(response_object, from_attributes=True)
 
     async def get_all(self,
-                      session: AsyncSession,
                       where_filter: Any = None,
                       limit: int = 10,
                       offset: int = 0,
@@ -87,7 +86,7 @@ class BaseSQLInterface(BaseDBInterface, SchemasValidator):
         if where_filter is not None:
             query = query.where(where_filter)
 
-        res = await self.query_execute(session, query)
+        res = await self.query_execute(query)
         response_object = res.scalars().all()
 
         if not response_object:
@@ -95,7 +94,6 @@ class BaseSQLInterface(BaseDBInterface, SchemasValidator):
         return [self._base_schemas.model_validate(resp_obj, from_attributes=True) for resp_obj in response_object]
 
     async def delete(self,
-                     session: AsyncSession,
                      where_filter: Any = None,
                      **kwargs) -> bool:
         if where_filter is None and not kwargs:
@@ -109,11 +107,10 @@ class BaseSQLInterface(BaseDBInterface, SchemasValidator):
         if where_filter is not None:
             query = query.where(where_filter)
 
-        await self.query_execute(session, query)
+        await self.query_execute(query)
         return True
 
     async def soft_delete(self,
-                          session: AsyncSession,
                           where_filter: Any = None,
                           **kwargs) -> bool:
         if where_filter is None and not kwargs:
@@ -129,11 +126,10 @@ class BaseSQLInterface(BaseDBInterface, SchemasValidator):
 
         query = query.values(delete_at=func.now())
 
-        await self.query_execute(session, query)
+        await self.query_execute(query)
         return True
 
     async def update(self,
-                     session: AsyncSession,
                      update_object: dict,
                      where_filter: Any = None,
                      **kwargs) -> bool:
@@ -153,22 +149,21 @@ class BaseSQLInterface(BaseDBInterface, SchemasValidator):
 
         query = query.values(**update_object)
 
-        await self.query_execute(session, query)
+        await self.query_execute(query)
         return True
 
     async def create(self,
-                     session: AsyncSession,
                      create_object: _create_schemas | list[_create_schemas]) -> bool:
         if isinstance(create_object, list):
             add_object = [self._db_model(**obj.model_dump()) for obj in create_object]
-            session.add_all(add_object)
+            self.session.add_all(add_object)
         else:
             add_object = self._db_model(**create_object.model_dump())
-            session.add(add_object)
+            self.session.add(add_object)
 
         return True
 
-    async def uniq_col_value(self, session: AsyncSession, col_name: str):
+    async def uniq_col_value(self, col_name: str):
         model_item = getattr(self._db_model, col_name)
-        result = await session.execute(select(distinct(model_item)))
+        result = await self.session.execute(select(distinct(model_item)))
         return result.scalars().all()

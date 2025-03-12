@@ -29,7 +29,8 @@ class MainCRUDInterface(BaseDBInterface):
 
         self.__redis = BaseRedisInterface(self._base_schemas,
                                           self._filters_schemas)
-        self.__sql = BaseSQLInterface(self._db_model,
+        self.__sql = BaseSQLInterface(self.session,
+                                      self._db_model,
                                       self._base_schemas,
                                       self._create_schemas,
                                       self.update_schemas,
@@ -47,13 +48,13 @@ class MainCRUDInterface(BaseDBInterface):
         await self.__redis.migrate()
 
     @classmethod
-    async def init(cls, db_model, base_schemas, create_schemas, update_schemas, filters_schemas):
+    async def init(cls, session: AsyncSession, db_model, base_schemas, create_schemas, update_schemas, filters_schemas):
+        cls.session = session
         instance = cls(db_model, base_schemas, create_schemas, update_schemas, filters_schemas)
         await instance.__migrate()
         return instance
 
     async def get_one_or_none(self,
-                              session: AsyncSession,
                               where_filter_sql: Any = None,
                               where_filter_redis: Any = None,
                               **kwargs
@@ -65,8 +66,7 @@ class MainCRUDInterface(BaseDBInterface):
                                                      **kwargs)
 
         if res is None and (where_filter_sql is not None or kwargs):
-            res = await self.__sql.get_one_or_none(session=session,
-                                                   where_filter=where_filter_sql,
+            res = await self.__sql.get_one_or_none(where_filter=where_filter_sql,
                                                    **kwargs)
             if res:
                 await self.__redis.create(res)
@@ -74,7 +74,6 @@ class MainCRUDInterface(BaseDBInterface):
         return res
 
     async def get_all(self,
-                      session: AsyncSession,
                       where_filter_sql: Any = None,
                       where_filter_redis: Any = None,
                       no_limit: bool = False,
@@ -85,10 +84,8 @@ class MainCRUDInterface(BaseDBInterface):
         if limit > 10000 and no_limit == False:
             raise ValueError("limit must be less than 10000")
 
-
         if no_limit:
             limit = 10000
-
 
         res = []
 
@@ -108,8 +105,7 @@ class MainCRUDInterface(BaseDBInterface):
                 where_filter_sql = where_filter_sql & (self._db_model.id.not_in(all_res_id))
             else:
                 where_filter_sql = self._db_model.id.not_in(all_res_id)
-            sql_res = await self.__sql.get_all(session=session,
-                                               where_filter=where_filter_sql,
+            sql_res = await self.__sql.get_all(where_filter=where_filter_sql,
                                                limit=limit,
                                                offset=offset,
                                                no_limit=no_limit,
@@ -129,29 +125,26 @@ class MainCRUDInterface(BaseDBInterface):
         return res
 
     async def create(self,
-                     session: AsyncSession,
                      create_object: _create_schemas | list[_create_schemas]) -> bool:
-        return await self.__sql.create(session, create_object)
+        return await self.__sql.create(create_object)
 
     async def update(self,
-                     session: AsyncSession,
                      update_object: dict,
                      where_filter_sql: Any = None,
                      **kwargs) -> bool:
-        await self.__sql.update(session, update_object, where_filter_sql, **kwargs)
-        obj = await self.__sql.get_all(session, where_filter_sql, **kwargs)
+        await self.__sql.update(update_object, where_filter_sql, **kwargs)
+        obj = await self.__sql.get_all(where_filter_sql, **kwargs)
         await self.__redis.update(obj)
         return True
 
     async def delete(self,
-                     session: AsyncSession,
                      where_filter: Any = None,
                      soft: bool = True,
                      **kwargs) -> bool:
-        res = await self.__sql.get_one_or_none(session, where_filter, **kwargs)
+        res = await self.__sql.get_one_or_none(where_filter, **kwargs)
         await self.__redis.delete(self._base_schemas.id == res.id)
         if soft:
-            await self.__sql.soft_delete(session, where_filter, **kwargs)
+            await self.__sql.soft_delete(where_filter, **kwargs)
         else:
-            await self.__sql.delete(session, where_filter, **kwargs)
+            await self.__sql.delete(where_filter, **kwargs)
         return True

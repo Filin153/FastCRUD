@@ -10,25 +10,29 @@ from .schemas.user import *
 
 @pytest.mark.run(order=1)
 class TestSQLInterface:
-    def test_init(self):
+    @pytest.mark.asyncio(loop_scope="session")
+    async def test_init(self):
         clear_all()
-        BaseSQLInterface(UserModel,
-                         UserSchemas,
-                         UserCreate,
-                         UserUpdate,
-                         UserFilters)
+        async with get_async_session() as session:
+            BaseSQLInterface(session,
+                             UserModel,
+                             UserSchemas,
+                             UserCreate,
+                             UserUpdate,
+                             UserFilters)
 
     @pytest.mark.asyncio(loop_scope="session")
     async def test_create(self):
-        interface = BaseSQLInterface(UserModel,
-                                     UserSchemas,
-                                     UserCreate,
-                                     UserUpdate,
-                                     UserFilters)
-
         async with get_async_session() as session:
+            interface = BaseSQLInterface(session,
+                                         UserModel,
+                                         UserSchemas,
+                                         UserCreate,
+                                         UserUpdate,
+                                         UserFilters)
+            
             await interface.create(
-                session=session,
+
                 create_object=UserCreate(**{
                     "tg_id": 54,
                     "fio": "Aboba_54",
@@ -37,7 +41,7 @@ class TestSQLInterface:
             )
 
             await interface.create(
-                session=session,
+
                 create_object=[
                     UserCreate(**{
                         "tg_id": 0,
@@ -55,14 +59,16 @@ class TestSQLInterface:
 
     @pytest.mark.asyncio(loop_scope="session")
     async def test_get_one(self):
-        interface = BaseSQLInterface(UserModel,
-                                     UserSchemas,
-                                     UserCreate,
-                                     UserUpdate,
-                                     UserFilters)
         async with get_async_session() as session:
+            interface = BaseSQLInterface(session,
+                                         UserModel,
+                                         UserSchemas,
+                                         UserCreate,
+                                         UserUpdate,
+                                         UserFilters)
+
             res_1 = await interface.get_one_or_none(
-                session=session,
+
                 tg_id=1,
             )
             assert res_1 != None
@@ -71,7 +77,7 @@ class TestSQLInterface:
             assert res_1.group == "XD_1"
 
             res_2 = await interface.get_one_or_none(
-                session=session,
+
                 where_filter=and_(UserModel.tg_id >= 10, UserModel.tg_id <= 60)
             )
             assert res_2 != None
@@ -80,22 +86,23 @@ class TestSQLInterface:
             assert res_2.group == "XD_54"
 
             res_3 = await interface.get_one_or_none(
-                session=session,
+
                 where_filter=and_(UserModel.tg_id >= 10, UserModel.tg_id <= 60, UserModel.fio != "Aboba_54")
             )
             assert res_3 == None
 
     @pytest.mark.asyncio(loop_scope="session")
     async def test_get_some(self):
-        interface = BaseSQLInterface(UserModel,
-                                     UserSchemas,
-                                     UserCreate,
-                                     UserUpdate,
-                                     UserFilters)
-
         async with get_async_session() as session:
+            interface = BaseSQLInterface(session,
+                                         UserModel,
+                                         UserSchemas,
+                                         UserCreate,
+                                         UserUpdate,
+                                         UserFilters)
+
             res_1 = await interface.get_all(
-                session=session,
+
                 tg_id=1,
             )
             assert res_1 != None
@@ -105,7 +112,7 @@ class TestSQLInterface:
                 assert item.group == "XD_1"
 
             res_2 = await interface.get_all(
-                session=session,
+
                 where_filter=and_(UserModel.tg_id >= 10, UserModel.tg_id <= 60)
             )
             assert res_2 != None
@@ -115,25 +122,25 @@ class TestSQLInterface:
                 assert item.group == "XD_54"
 
             res_3 = await interface.get_all(
-                session=session,
+
                 where_filter=and_(UserModel.tg_id >= 10, UserModel.tg_id <= 60, UserModel.fio != "Aboba_54")
             )
             assert res_3 == []
 
             res_4 = await interface.get_all(
-                session=session,
+
                 limit=1
             )
             assert len(res_4) == 1
 
             res_5 = await interface.get_all(
-                session=session,
+
                 limit=2
             )
             assert len(res_5) == 2
 
             res_6 = await interface.get_all(
-                session=session,
+
                 offset=1,
                 limit=2
             )
@@ -146,22 +153,23 @@ class TestSQLInterface:
             assert res_6[1].group == "XD_1"
 
             res_7 = await interface.get_all(
-                session=session,
+
                 no_limit=True
             )
             assert len(res_7) == 3
 
     @pytest.mark.asyncio(loop_scope="session")
     async def test_update(self):
-        interface = BaseSQLInterface(UserModel,
-                                     UserSchemas,
-                                     UserCreate,
-                                     UserUpdate,
-                                     UserFilters)
-
         async with get_async_session() as session:
+            interface = BaseSQLInterface(session,
+                                         UserModel,
+                                         UserSchemas,
+                                         UserCreate,
+                                         UserUpdate,
+                                         UserFilters)
+
             await interface.update(
-                session=session,
+
                 update_object={
                     "fio": "XXX"
                 },
@@ -169,14 +177,14 @@ class TestSQLInterface:
             )
             await session.flush()
             res_1 = await interface.get_one_or_none(
-                session=session,
+
                 tg_id=0,
             )
             assert res_1 != None
             assert res_1.fio == "XXX"
 
             await interface.update(
-                session=session,
+
                 update_object={
                     "fio": "qwerty"
                 },
@@ -184,7 +192,7 @@ class TestSQLInterface:
             )
             await session.flush()
             res_2 = await interface.get_all(
-                session=session,
+
                 where_filter=UserModel.tg_id >= 1,
             )
             assert res_2 != []
@@ -195,15 +203,16 @@ class TestSQLInterface:
 
     @pytest.mark.asyncio(loop_scope="session")
     async def test_uniq_col_value(self):
-        interface = BaseSQLInterface(UserModel,
-                                     UserSchemas,
-                                     UserCreate,
-                                     UserUpdate,
-                                     UserFilters)
-
         async with get_async_session() as session:
+            interface = BaseSQLInterface(session,
+                                         UserModel,
+                                         UserSchemas,
+                                         UserCreate,
+                                         UserUpdate,
+                                         UserFilters)
+
             all_uniq_val = await interface.uniq_col_value(
-                session=session,
+
                 col_name="tg_id"
             )
             assert len(all_uniq_val) == 3
@@ -211,35 +220,36 @@ class TestSQLInterface:
 
     @pytest.mark.asyncio(loop_scope="session")
     async def test_delete(self):
-        interface = BaseSQLInterface(UserModel,
-                                     UserSchemas,
-                                     UserCreate,
-                                     UserUpdate,
-                                     UserFilters)
-
         async with get_async_session() as session:
+            interface = BaseSQLInterface(session,
+                                         UserModel,
+                                         UserSchemas,
+                                         UserCreate,
+                                         UserUpdate,
+                                         UserFilters)
+
             await interface.delete(
-                session=session,
+
                 tg_id=1
             )
 
             await session.flush()
 
             res_1 = await interface.get_one_or_none(
-                session=session,
+
                 tg_id=1,
             )
             assert res_1 == None
 
             await interface.soft_delete(
-                session=session,
+
                 tg_id=0
             )
 
             await session.flush()
 
             res_2 = await interface.get_one_or_none(
-                session=session,
+
                 tg_id=0,
             )
             assert res_2 == None
