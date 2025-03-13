@@ -96,6 +96,7 @@ class MainCRUDInterface(BaseDBInterface):
             else:
                 res += redis_res
 
+
         all_res_id = [item.id for item in res]
         while True:
             if where_filter_sql is not None:
@@ -107,8 +108,13 @@ class MainCRUDInterface(BaseDBInterface):
                                                offset=offset,
                                                no_limit=no_limit,
                                                **kwargs)
+
+            if no_limit:
+                return sql_res
+
             if not sql_res:
                 break
+
 
             await self.__redis.create(sql_res)
             all_res_id += [item.id for item in sql_res]
