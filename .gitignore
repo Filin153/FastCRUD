@@ -11,3 +11,4 @@ wheels/
 
 /pgdata
 /redis-data
+speed_test.py

@@ -1,3 +1,4 @@
+import asyncio
 from typing import Union, Any, Optional
 
 from pydantic import BaseModel
@@ -61,15 +62,17 @@ class MainCRUDInterface(BaseDBInterface):
                               ) -> Optional[_base_schemas]:
         res = None
 
-        if where_filter_redis or kwargs:
+        if where_filter_redis is not None or kwargs is not None:
             res = await self.__redis.get_one_or_none(where_filter=where_filter_redis,
                                                      **kwargs)
+            if res:
+                return res
 
-        if res is None and (where_filter_sql is not None or kwargs):
+        if res is None and (where_filter_redis is not None or kwargs is not None):
             res = await self.__sql.get_one_or_none(where_filter=where_filter_sql,
                                                    **kwargs)
             if res:
-                await self.__redis.create(res)
+                asyncio.create_task(self.__redis.create(res))
 
         return res
 
@@ -86,7 +89,7 @@ class MainCRUDInterface(BaseDBInterface):
 
         res = []
 
-        if (where_filter_redis or kwargs) and no_limit == False:
+        if (where_filter_redis is not None or kwargs is not None) and no_limit == False:
             redis_res = await self.__redis.get_all(where_filter=where_filter_redis,
                                                    limit=limit,
                                                    offset=offset,
@@ -116,7 +119,7 @@ class MainCRUDInterface(BaseDBInterface):
                 break
 
 
-            await self.__redis.create(sql_res)
+            asyncio.create_task(self.__redis.create(sql_res))
             all_res_id += [item.id for item in sql_res]
             res += sql_res
             if len(set(all_res_id)) >= limit:
