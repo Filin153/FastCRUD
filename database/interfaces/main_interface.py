@@ -84,12 +84,9 @@ class MainCRUDInterface(BaseDBInterface):
         if limit > 10000 and no_limit == False:
             raise ValueError("limit must be less than 10000")
 
-        if no_limit:
-            limit = 10000
-
         res = []
 
-        if where_filter_redis or kwargs:
+        if (where_filter_redis or kwargs) and no_limit == False:
             redis_res = await self.__redis.get_all(where_filter=where_filter_redis,
                                                    limit=limit,
                                                    offset=offset,
