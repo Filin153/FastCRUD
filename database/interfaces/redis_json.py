@@ -92,13 +92,11 @@ class BaseRedisInterface(BaseDBInterface, SchemasValidator):
                                                                    **kwargs)
 
             if where_filter:
-                where_filter = where_filter & (self._base_schemas.id >= offset)
+                where_filter = where_filter & ((self._base_schemas.id >= offset) & (self._base_schemas.id <= limit + offset - 1))
             else:
-                where_filter = self._base_schemas.id >= offset
+                where_filter = (self._base_schemas.id >= offset) & (self._base_schemas.id < limit + offset - 1)
 
             query = self._base_schemas.find(where_filter)
-
-            query.limit = limit
 
             return await query.all()
         except NotFoundError:

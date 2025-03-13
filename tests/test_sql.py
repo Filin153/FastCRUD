@@ -31,9 +31,7 @@ class TestSQLInterface:
                                          UserUpdate,
                                          UserFilters)
             
-            await interface.create(
-
-                create_object=UserCreate(**{
+            await interface.create(UserCreate(**{
                     "tg_id": 54,
                     "fio": "Aboba_54",
                     "group": "XD_54"

@@ -40,7 +40,6 @@ class TestMainInterface:
             )
 
             await interface.create(
-
                 create_object=[
                     UserCreate(**{
                         "tg_id": 0,
@@ -137,7 +136,6 @@ class TestMainInterface:
             assert len(res_4) == 1
 
             res_5 = await interface.get_all(
-
                 limit=2
             )
             assert len(res_5) == 2
@@ -147,6 +145,7 @@ class TestMainInterface:
                 offset=1,
                 limit=2
             )
+            print(res_6)
             assert len(res_6) == 2
             assert res_6[0].tg_id == 0
             assert res_6[0].fio == "Aboba_0"
@@ -230,18 +229,6 @@ class TestMainInterface:
                                                      UserCreate,
                                                      UserUpdate,
                                                      UserFilters)
-
-            # For set to Redis
-            await interface.get_one_or_none(
-
-                tg_id=0,
-            )
-
-            await interface.get_one_or_none(
-
-                tg_id=1,
-            )
-            # --------
 
             await interface.delete(
 
