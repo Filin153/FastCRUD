@@ -147,8 +147,9 @@ class MainCRUDInterface(BaseDBInterface):
                      where_filter: Any = None,
                      soft: bool = True,
                      **kwargs) -> bool:
-        res = await self.__sql.get_one_or_none(where_filter, **kwargs)
-        await self.__redis.delete(self._base_schemas.id == res.id)
+        res = await self.__sql.get_all(where_filter, **kwargs)
+        for item in res:
+            await self.__redis.delete(self._base_schemas.id == item.id)
         if soft:
             await self.__sql.soft_delete(where_filter, **kwargs)
         else:
