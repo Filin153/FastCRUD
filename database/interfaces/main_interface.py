@@ -99,7 +99,6 @@ class MainCRUDInterface(BaseDBInterface):
             else:
                 res += redis_res
 
-
         all_res_id = [item.id for item in res]
         while True:
             if where_filter_sql is not None:
@@ -117,7 +116,6 @@ class MainCRUDInterface(BaseDBInterface):
 
             if not sql_res:
                 break
-
 
             asyncio.create_task(self.__redis.create(sql_res))
             all_res_id += [item.id for item in sql_res]
@@ -155,3 +153,6 @@ class MainCRUDInterface(BaseDBInterface):
         else:
             await self.__sql.delete(where_filter, **kwargs)
         return True
+
+    async def uniq_col_value(self, col_name: str) -> list[Any]:
+        return await self.__sql.uniq_col_value(col_name)
