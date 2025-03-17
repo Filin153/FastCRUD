@@ -39,7 +39,7 @@ class MainCRUDInterface(BaseDBInterface):
     async def __migrate(self):
         await self.__redis.migrate()
 
-    async def connect(self, session: AsyncSession):
+    async def _connect(self, session: AsyncSession):
         self.session = session
         self.__redis = BaseRedisInterface(self._base_schemas,
                                           self._filters_schemas)
