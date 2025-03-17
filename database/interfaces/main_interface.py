@@ -28,15 +28,6 @@ class MainCRUDInterface(BaseDBInterface):
         self.update_schemas = update_schemas
         self._filters_schemas = filters_schemas
 
-        self.__redis = BaseRedisInterface(self._base_schemas,
-                                          self._filters_schemas)
-        self.__sql = BaseSQLInterface(self.session,
-                                      self._db_model,
-                                      self._base_schemas,
-                                      self._create_schemas,
-                                      self.update_schemas,
-                                      self._filters_schemas)
-
     @property
     def sql(self):
         return self.__sql
@@ -48,12 +39,17 @@ class MainCRUDInterface(BaseDBInterface):
     async def __migrate(self):
         await self.__redis.migrate()
 
-    @classmethod
-    async def init(cls, session: AsyncSession, db_model, base_schemas, create_schemas, update_schemas, filters_schemas):
-        cls.session = session
-        instance = cls(db_model, base_schemas, create_schemas, update_schemas, filters_schemas)
-        await instance.__migrate()
-        return instance
+    async def connect(self, session: AsyncSession):
+        self.session = session
+        self.__redis = BaseRedisInterface(self._base_schemas,
+                                          self._filters_schemas)
+        self.__sql = BaseSQLInterface(self.session,
+                                      self._db_model,
+                                      self._base_schemas,
+                                      self._create_schemas,
+                                      self.update_schemas,
+                                      self._filters_schemas)
+        await self.__migrate()
 
     async def get_one_or_none(self,
                               where_filter_sql: Any = None,

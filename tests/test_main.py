@@ -14,22 +14,22 @@ class TestMainInterface:
     async def test_init(self):
         clear_all()
         async with get_async_session() as session:
-            await MainCRUDInterface.init(session,
-                                         UserModel,
-                                         UserSchemas,
-                                         UserCreate,
-                                         UserUpdate,
-                                         UserFilters)
+            mci = MainCRUDInterface(UserModel,
+                                    UserSchemas,
+                                    UserCreate,
+                                    UserUpdate,
+                                    UserFilters)
+            await mci.connect(session)
 
     @pytest.mark.asyncio(loop_scope="session")
     async def test_create(self):
         async with get_async_session() as session:
-            interface = await MainCRUDInterface.init(session,
-                                                     UserModel,
-                                                     UserSchemas,
-                                                     UserCreate,
-                                                     UserUpdate,
-                                                     UserFilters)
+            interface = MainCRUDInterface(UserModel,
+                                    UserSchemas,
+                                    UserCreate,
+                                    UserUpdate,
+                                    UserFilters)
+            await interface.connect(session)
 
             await interface.create(
                 create_object=UserCreate(**{
@@ -58,12 +58,12 @@ class TestMainInterface:
     @pytest.mark.asyncio(loop_scope="session")
     async def test_get_one(self):
         async with get_async_session() as session:
-            interface = await MainCRUDInterface.init(session,
-                                                     UserModel,
-                                                     UserSchemas,
-                                                     UserCreate,
-                                                     UserUpdate,
-                                                     UserFilters)
+            interface = MainCRUDInterface(UserModel,
+                                    UserSchemas,
+                                    UserCreate,
+                                    UserUpdate,
+                                    UserFilters)
+            await interface.connect(session)
 
             res_1 = await interface.get_one_or_none(
 
@@ -94,12 +94,12 @@ class TestMainInterface:
     @pytest.mark.asyncio(loop_scope="session")
     async def test_get_some(self):
         async with get_async_session() as session:
-            interface = await MainCRUDInterface.init(session,
-                                                     UserModel,
-                                                     UserSchemas,
-                                                     UserCreate,
-                                                     UserUpdate,
-                                                     UserFilters)
+            interface = MainCRUDInterface(UserModel,
+                                    UserSchemas,
+                                    UserCreate,
+                                    UserUpdate,
+                                    UserFilters)
+            await interface.connect(session)
 
             res_1 = await interface.get_all(
 
@@ -163,12 +163,12 @@ class TestMainInterface:
     @pytest.mark.asyncio(loop_scope="session")
     async def test_update(self):
         async with get_async_session() as session:
-            interface = await MainCRUDInterface.init(session,
-                                                     UserModel,
-                                                     UserSchemas,
-                                                     UserCreate,
-                                                     UserUpdate,
-                                                     UserFilters)
+            interface = MainCRUDInterface(UserModel,
+                                    UserSchemas,
+                                    UserCreate,
+                                    UserUpdate,
+                                    UserFilters)
+            await interface.connect(session)
 
             await interface.update(
 
@@ -207,12 +207,12 @@ class TestMainInterface:
     @pytest.mark.asyncio(loop_scope="session")
     async def test_uniq_col_value(self):
         async with get_async_session() as session:
-            interface = await MainCRUDInterface.init(session,
-                                                     UserModel,
-                                                     UserSchemas,
-                                                     UserCreate,
-                                                     UserUpdate,
-                                                     UserFilters)
+            interface = MainCRUDInterface(UserModel,
+                                    UserSchemas,
+                                    UserCreate,
+                                    UserUpdate,
+                                    UserFilters)
+            await interface.connect(session)
 
             all_uniq_val = await interface.sql.uniq_col_value(
                 col_name="tg_id"
@@ -223,12 +223,12 @@ class TestMainInterface:
     @pytest.mark.asyncio(loop_scope="session")
     async def test_delete(self):
         async with get_async_session() as session:
-            interface = await MainCRUDInterface.init(session,
-                                                     UserModel,
-                                                     UserSchemas,
-                                                     UserCreate,
-                                                     UserUpdate,
-                                                     UserFilters)
+            interface = MainCRUDInterface(UserModel,
+                                    UserSchemas,
+                                    UserCreate,
+                                    UserUpdate,
+                                    UserFilters)
+            await interface.connect(session)
 
             await interface.delete(
 
