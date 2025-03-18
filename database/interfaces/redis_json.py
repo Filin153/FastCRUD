@@ -94,7 +94,6 @@ class BaseRedisInterface(BaseDBInterface, SchemasValidator):
 
     async def __create(self, create_object: _base_schemas):
         create_object = await self.__bool_convert_for_object(create_object)
-        print(create_object.model_dump())
         try:
             await self.delete(self._base_schemas.id == create_object.id)
         except:
