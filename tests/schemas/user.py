@@ -10,7 +10,7 @@ class UserCreate(BaseModel):
     tg_id: int = Field(index=True)
     fio: str = Field(index=True, full_text_search=True)
     group: str = Field(index=True, full_text_search=True)
-    allow: Union[bool, int] = Field(index=True)
+    allow: bool = Field(index=True)
 
 
 class UserUpdate(BaseModel):
