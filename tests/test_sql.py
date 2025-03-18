@@ -34,7 +34,8 @@ class TestSQLInterface:
             await interface.create(UserCreate(**{
                     "tg_id": 54,
                     "fio": "Aboba_54",
-                    "group": "XD_54"
+                    "group": "XD_54",
+                "allow": True
                 })
             )
 
@@ -44,12 +45,14 @@ class TestSQLInterface:
                     UserCreate(**{
                         "tg_id": 0,
                         "fio": "Aboba_0",
-                        "group": "XD_0"
+                        "group": "XD_0",
+                        "allow": True
                     }),
                     UserCreate(**{
                         "tg_id": 1,
                         "fio": "Aboba_1",
-                        "group": "XD_1"
+                        "group": "XD_1",
+                        "allow": True
                     })
                 ]
             )

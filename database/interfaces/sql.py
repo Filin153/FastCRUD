@@ -161,7 +161,7 @@ class BaseSQLInterface(BaseDBInterface, SchemasValidator):
             add_object = self._db_model(**create_object.model_dump())
             self.session.add(add_object)
 
-        return True
+        return add_object
 
     async def uniq_col_value(self, col_name: str):
         model_item = getattr(self._db_model, col_name)

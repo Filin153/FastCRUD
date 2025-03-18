@@ -19,7 +19,7 @@ class TestMainInterface:
                                     UserCreate,
                                     UserUpdate,
                                     UserFilters)
-            await mci.connect(session)
+            await mci._connect(session)
 
     @pytest.mark.asyncio(loop_scope="session")
     async def test_create(self):
@@ -29,13 +29,14 @@ class TestMainInterface:
                                     UserCreate,
                                     UserUpdate,
                                     UserFilters)
-            await interface.connect(session)
+            await interface._connect(session)
 
             await interface.create(
                 create_object=UserCreate(**{
                     "tg_id": 54,
                     "fio": "Aboba_54",
-                    "group": "XD_54"
+                    "group": "XD_54",
+                    "allow": True
                 })
             )
 
@@ -44,12 +45,14 @@ class TestMainInterface:
                     UserCreate(**{
                         "tg_id": 0,
                         "fio": "Aboba_0",
-                        "group": "XD_0"
+                        "group": "XD_0",
+                        "allow": True
                     }),
                     UserCreate(**{
                         "tg_id": 1,
                         "fio": "Aboba_1",
-                        "group": "XD_1"
+                        "group": "XD_1",
+                        "allow": True
                     })
                 ]
             )
@@ -63,7 +66,7 @@ class TestMainInterface:
                                     UserCreate,
                                     UserUpdate,
                                     UserFilters)
-            await interface.connect(session)
+            await interface._connect(session)
 
             res_1 = await interface.get_one_or_none(
 
@@ -99,7 +102,7 @@ class TestMainInterface:
                                     UserCreate,
                                     UserUpdate,
                                     UserFilters)
-            await interface.connect(session)
+            await interface._connect(session)
 
             res_1 = await interface.get_all(
 
@@ -168,7 +171,7 @@ class TestMainInterface:
                                     UserCreate,
                                     UserUpdate,
                                     UserFilters)
-            await interface.connect(session)
+            await interface._connect(session)
 
             await interface.update(
 
@@ -212,7 +215,7 @@ class TestMainInterface:
                                     UserCreate,
                                     UserUpdate,
                                     UserFilters)
-            await interface.connect(session)
+            await interface._connect(session)
 
             all_uniq_val = await interface.sql.uniq_col_value(
                 col_name="tg_id"
@@ -228,7 +231,7 @@ class TestMainInterface:
                                     UserCreate,
                                     UserUpdate,
                                     UserFilters)
-            await interface.connect(session)
+            await interface._connect(session)
 
             await interface.delete(
 

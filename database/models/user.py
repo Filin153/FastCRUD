@@ -12,3 +12,4 @@ class UserModel(Base):
     tg_id: Mapped[int] = mapped_column(BIGINT, nullable=False)
     fio: Mapped[str] = mapped_column()
     group: Mapped[str] = mapped_column()
+    allow: Mapped[bool] = mapped_column()

@@ -22,7 +22,8 @@ class TestRedisDB:
             "id": 0,
             "tg_id": 0,
             "fio": "Aboba 0",
-            "group": "XD 0"
+            "group": "XD 0",
+            "allow": True
         }))
 
         await interface.create([
@@ -30,13 +31,15 @@ class TestRedisDB:
                 "id": 1,
                 "tg_id": 1,
                 "fio": "Aboba 1",
-                "group": "XD 1"
+                "group": "XD 1",
+                "allow": True
             }),
             UserSchemas(**{
                 "id": 2,
                 "tg_id": 2,
                 "fio": "Aboba 2",
-                "group": "XD 2"
+                "group": "XD 2",
+                "allow": True
             })
         ])
 
@@ -56,7 +59,7 @@ class TestRedisDB:
         assert res_2.group == "XD 2"
 
         res_3 = await interface.get_one_or_none(UserSchemas.tg_id >= 1,
-                                                 fio="Aboba 2")
+                                                fio="Aboba 2")
         assert res_3 != None
         assert res_3.id == 2
         assert res_3.tg_id == 2
